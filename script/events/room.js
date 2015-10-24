@@ -39,7 +39,8 @@ Events.Room = [
 						text: _('buy compass'),
 						cost: { fur: 300, scales: 15, teeth: 5 },
 						reward: { 'compass': 1 },
-						notification: _('the old compass is dented and dusty, but it looks to work.')
+						notification: _('the old compass is dented and dusty, but it looks to work.'),
+						onChoose: Path.openPath
 					}, 
 					'goodbye': {
 						text: _('say goodbye'),
@@ -48,8 +49,7 @@ Events.Room = [
 				}
 			}
 		}
-	}, 
-	{ /* Noises Outside  --  gain wood/fur */
+	}, { /* Noises Outside  --  gain wood/fur */
 		title: _('Noises'),
 		isAvailable: function() {
 			return Engine.activeModule == Room && $SM.get('stores.wood');
@@ -132,9 +132,9 @@ Events.Room = [
 				onLoad: function() {
 					var numWood = $SM.get('stores.wood', true);
 					numWood = Math.floor(numWood * 0.1);
-					if(numWood === 0) numWood = 1;
+					if(numWood == 0) numWood = 1;
 					var numScales = Math.floor(numWood / 5);
-					if(numScales === 0) numScales = 1;
+					if(numScales == 0) numScales = 1;
 					$SM.addM('stores', {'wood': -numWood, 'scales': numScales});
 				},
 				buttons: {
@@ -152,9 +152,9 @@ Events.Room = [
 				onLoad: function() {
 					var numWood = $SM.get('stores.wood', true);
 					numWood = Math.floor(numWood * 0.1);
-					if(numWood === 0) numWood = 1;
+					if(numWood == 0) numWood = 1;
 					var numTeeth = Math.floor(numWood / 5);
-					if(numTeeth === 0) numTeeth = 1;
+					if(numTeeth == 0) numTeeth = 1;
 					$SM.addM('stores', {'wood': -numWood, 'teeth': numTeeth});
 				},
 				buttons: {
@@ -172,9 +172,9 @@ Events.Room = [
 				onLoad: function() {
 					var numWood = $SM.get('stores.wood', true);
 					numWood = Math.floor(numWood * 0.1);
-					if(numWood === 0) numWood = 1;
+					if(numWood == 0) numWood = 1;
 					var numCloth = Math.floor(numWood / 5);
-					if(numCloth === 0) numCloth = 1;
+					if(numCloth == 0) numCloth = 1;
 					$SM.addM('stores', {'wood': -numWood, 'cloth': numCloth});
 				},
 				buttons: {
@@ -272,15 +272,15 @@ Events.Room = [
 				notification: _('a mysterious wanderer arrives'),
 				blink: true,
 				buttons: {
-					'wood100': {
+					'100wood': {
 						text: _('give 100'),
 						cost: {wood: 100},
-						nextScene: { 1: 'wood100'}
+						nextScene: { 1: '100wood'}
 					},
-					'wood500': {
+					'500wood': {
 						text: _('give 500'),
 						cost: {wood: 500},
-						nextScene: { 1: 'wood500' }
+						nextScene: { 1: '500wood' }
 					},
 					'deny': {
 						text: _('turn him away'),
@@ -288,20 +288,16 @@ Events.Room = [
 					}
 				}
 			},
-			'wood100': {
+			'100wood': {
 				text: [
 					_('the wanderer leaves, cart loaded with wood')
 				],
-				action: function(delay) {
-					var delay = delay || false;
-					Events.saveDelay(function() {
-						$SM.add('stores.wood', 300);
-						Notifications.notify(Room, _('the mysterious wanderer returns, cart piled high with wood.'));
-					}, 'Room[4].scenes.wood100.action', delay);
-				},
 				onLoad: function() {
 					if(Math.random() < 0.5) {
-						this.action(60);
+						setTimeout(function() {
+							$SM.add('stores.wood', 300);
+							Notifications.notify(Room, _('the mysterious wanderer returns, cart piled high with wood.'));
+						}, 60 * 1000);
 					}
 				},
 				buttons: {
@@ -311,20 +307,16 @@ Events.Room = [
 					}
 				}
 			},
-			'wood500': {
+			'500wood': {
 				text: [
 					_('the wanderer leaves, cart loaded with wood')
 				],
-				action: function(delay) {
-					var delay = delay || false;
-					Events.saveDelay(function() {
-						$SM.add('stores.wood', 1500);
-						Notifications.notify(Room, _('the mysterious wanderer returns, cart piled high with wood.'));
-					}, 'Room[4].scenes.wood500.action', delay);
-				},
 				onLoad: function() {
 					if(Math.random() < 0.3) {
-						this.action(60);
+						setTimeout(function() {
+							$SM.add('stores.wood', 1500);
+							Notifications.notify(Room, _('the mysterious wanderer returns, cart piled high with wood.'));
+						}, 60 * 1000);
 					}
 				},
 				buttons: {
@@ -351,15 +343,15 @@ Events.Room = [
 				notification: _('a mysterious wanderer arrives'),
 				blink: true,
 				buttons: {
-					'fur100': {
+					'100fur': {
 						text: _('give 100'),
 						cost: {fur: 100},
-						nextScene: { 1: 'fur100'}
+						nextScene: { 1: '100fur'}
 					},
-					'fur500': {
+					'500fur': {
 						text: _('give 500'),
 						cost: {fur: 500},
-						nextScene: { 1: 'fur500' }
+						nextScene: { 1: '500fur' }
 					},
 					'deny': {
 						text: _('turn her away'),
@@ -367,20 +359,16 @@ Events.Room = [
 					}
 				}
 			},
-			'fur100': {
+			'100fur': {
 				text: [
 					_('the wanderer leaves, cart loaded with furs')
 				],
-				action: function(delay) {
-					var delay = delay || false;
-					Events.saveDelay(function() {
-						$SM.add('stores.fur', 300);
-						Notifications.notify(Room, _('the mysterious wanderer returns, cart piled high with furs.'));
-					}, 'Room[5].scenes.fur100.action', delay);
-				},
 				onLoad: function() {
 					if(Math.random() < 0.5) {
-						this.action(60);
+						setTimeout(function() {
+							$SM.add('stores.fur', 300);
+							Notifications.notify(Room, _('the mysterious wanderer returns, cart piled high with furs.'));
+						}, 60 * 1000);
 					}
 				},
 				buttons: {
@@ -390,20 +378,16 @@ Events.Room = [
 					}
 				}
 			},
-			'fur500': {
+			'500fur': {
 				text: [
 					_('the wanderer leaves, cart loaded with furs')
 				],
-				action: function(delay) {
-					var delay = delay || false;
-					Events.saveDelay(function() {
-						$SM.add('stores.fur', 1500);
-						Notifications.notify(Room, _('the mysterious wanderer returns, cart piled high with furs.'));
-					}, 'Room[5].scenes.fur500.action', delay);
-				},
 				onLoad: function() {
 					if(Math.random() < 0.3) {
-						this.action(60);
+						setTimeout(function() {
+							$SM.add('stores.fur', 1500);
+							Notifications.notify(Room, _('the mysterious wanderer returns, cart piled high with furs.'));
+						}, 60 * 1000);
 					}
 				},
 				buttons: {

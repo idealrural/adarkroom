@@ -1,11 +1,11 @@
 div#village {
-	position: absolute;
+	/* mobile position: absolute;
 	top: 0px;
-	right: 0px;
+	right: 0px; */
 	border: 1px solid black;
 	cursor: default;
 	padding: 5px 10px;
-	width: 200px;
+	/* mobile */
 }
 
 div#population {
@@ -22,21 +22,27 @@ div#population {
 div#village:before {
 	position: absolute;
 	background: white;
-	content: attr(data-legend);
+	content: "village";
 	left: 8px;
 	top: -13px;
 }
 
+div#village.noHuts:before {
+	content: "forest";
+}
+
 div#workers {
-	position:absolute;
+	/* mobile position:absolute;
 	top: -4px;
-	left: 160px;
-	width: 150px;
+	left: 160px;  */
+	/* mobile */
+
 }
 
 .workerRow > .row_val {
 	position: relative;
-	padding-right: 20px;
+	/* mobile */
+	padding-right: 0px;
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
 	-khtml-user-select: none;
@@ -57,4 +63,13 @@ div#workers {
 
 div.storeRow div.tooltip {
 	width: 160px;
+}
+
+/* mobile */
+div#outsideRightPanel {
+    position: absolute;
+	top: 0px;
+	right: 0px;
+    width: 50%;
+	padding-bottom: 110px;
 }

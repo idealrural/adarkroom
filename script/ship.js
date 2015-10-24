@@ -51,6 +51,7 @@ var Ship = {
 			text: _('reinforce hull'),
 			click: Ship.reinforceHull,
 			width: '100px',
+			tooltip: _('alien alloy') + ': ' + Ship.ALLOY_PER_HULL.toString(),
 			cost: {'alien alloy': Ship.ALLOY_PER_HULL}
 		}).appendTo('div#shipPanel');
 		
@@ -60,6 +61,7 @@ var Ship = {
 			text: _('upgrade engine'),
 			click: Ship.upgradeEngine,
 			width: '100px',
+			tooltip: _('alien alloy') + ': ' + Ship.ALLOY_PER_THRUSTER.toString(),
 			cost: {'alien alloy': Ship.ALLOY_PER_THRUSTER}
 		}).appendTo('div#shipPanel');
 		
@@ -97,7 +99,7 @@ var Ship = {
 	
 	setTitle: function() {
 		if(Engine.activeModule == this) {
-			document.title = _("An Old Starship");
+			document.title = "An Old Starship";
 		}
 	},
 	
@@ -163,9 +165,12 @@ var Ship = {
 	},
 	
 	liftOff: function () {
-		$('#outerSlider').animate({top: '700px'}, 300);
-		Space.onArrival();
+	    /* mobile
+		$('#outerSlider').animate({top: '700px'}, 300); */
+		$('#main').hide();
+		
 		Engine.activeModule = Space;
+		Space.onArrival();
 	},
 	
 	handleStateUpdates: function(e){

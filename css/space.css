@@ -58,10 +58,11 @@
 	}
 }
 
+/* mobile */
 #spacePanel {
 	float: none !important;
 	position: absolute !important;
-	top: -700px;
+	top: 0px;
 	left: 0px;
 }
 
@@ -151,4 +152,26 @@
 
 .endGameRestart:hover {
 	text-decoration: underline;
+}
+
+.space-right {
+    position: absolute;
+    margin-top: -10px;
+	width: 0; 
+	height: 0; 
+	border-top: 20px solid transparent;
+	border-bottom: 20px solid transparent;
+	border-left: 20px solid rgba(155, 155, 155, 0.5);
+	z-index: 1000;
+}
+
+.space-left {
+    position: absolute;
+    margin-top: -10px;
+	width: 0; 
+	height: 0; 
+	border-top: 20px solid transparent;
+	border-bottom: 20px solid transparent; 
+	border-right:20px solid rgba(155, 155, 155, 0.5);
+	z-index: 1000;
 }

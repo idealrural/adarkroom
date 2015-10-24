@@ -30,10 +30,13 @@
 
 #bagspace-world {
 	border: 1px solid black;
-	height: 62px;
+	/* mobile
+	height: 62px; */
 	margin-bottom: 5px;
 	margin-top: 13px;
 	overflow: hidden;
+	/* mobile */
+	width: 100%;
 }
 
 #bagspace-world > div {
@@ -71,4 +74,62 @@ div.supplyItem {
 	margin: 0px 5px 6px 0px;
 	padding: 0 5px;
 	cursor: default;
+}
+
+/* mobile */
+#legend {
+	border: 1px solid white;
+	color: white;
+	margin-bottom: 5px;
+	overflow: hidden;
+	/* mobile */
+	width: 100%;
+}
+
+#legend > div {
+	margin: 6px 4px 6px 4px;
+}
+
+#moreInfo {
+    float: right;
+}
+
+.arrow-up {
+    position: absolute;
+	width: 0; 
+	height: 0; 
+	border-left: 20px solid transparent;
+	border-right: 20px solid transparent;
+	border-bottom: 20px solid rgba(155, 155, 155, 0.5);
+	z-index: 1000;
+}
+
+.arrow-down {
+    position: absolute;
+	width: 0; 
+	height: 0; 
+	border-left: 20px solid transparent;
+	border-right: 20px solid transparent;
+	border-top: 20px solid rgba(155, 155, 155, 0.5);
+	z-index: 1000;
+}
+
+.arrow-right {
+    position: absolute;
+	width: 0; 
+	height: 0; 
+	border-top: 20px solid transparent;
+	border-bottom: 20px solid transparent;
+	border-left: 20px solid rgba(155, 155, 155, 0.5);
+	z-index: 1000;
+}
+
+.arrow-left {
+    position: absolute;
+	width: 0; 
+	height: 0; 
+	border-top: 20px solid transparent;
+	border-bottom: 20px solid transparent; 
+	border-right:20px solid rgba(155, 155, 155, 0.5);
+	z-index: 1000;
 }

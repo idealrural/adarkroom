@@ -19,6 +19,8 @@ var Space = {
 	done: false,
 	shipX: null,
 	shipY: null,
+	shipLeft: null,
+	shipRight: null,
 	
 	hull: 0,
 	
@@ -42,6 +44,15 @@ var Space = {
 		$('<div>').addClass('row_key').text(_('hull: ')).appendTo(h);
 		$('<div>').addClass('row_val').appendTo(h);
 		
+		// mobile
+		$('<div>').attr('id', 'spaceTitle').css("float", "right").appendTo(this.panel);
+		
+		Space.shipLeft = $('<div>').addClass('space-left').appendTo(this.panel);
+		Space.shipLeft.on('click', function() { Space.left = true; });
+		
+		Space.shipRight = $('<div>').addClass('space-right').appendTo(this.panel);
+		Space.shipRight.on('click', function() { Space.right = true; });
+		
 		//subscribe to stateUpdates
 		$.Dispatch('stateUpdate').subscribe(Space.handleStateUpdates);
 	},
@@ -49,6 +60,8 @@ var Space = {
 	options: {}, // Nothing for now
 	
 	onArrival: function() {
+	    // mobile
+		$('#spacePanel').show();
 		Space.done = false;
 		Engine.keyLock = false;
 		Space.hull = Ship.getMaxHull();
@@ -61,12 +74,47 @@ var Space = {
 		Space.left = 
 		Space.right = false;
 		
+		/* mobile */
+		var left = $(window).outerWidth()/2 - 5;
+		var top = $(window).outerHeight() - 150;
 		Space.ship.css({
-			top: '350px',
-			left: '350px'
+			top: top.toString()+'px',
+			left: left.toString()+'px'
 		});
+
+		Space.shipLeft.css({
+			top: top.toString()+'px',
+			left: '10px'
+		});
+
+		Space.shipRight.css({
+			top: top.toString()+'px',
+			right: '10px'
+		});
+
 		Space.startAscent();
 		Space._shipTimer = setInterval(Space.moveShip, 33);
+		
+		// mobile
+		var options = { frequency: 100 };  // Update every 3 seconds
+		if (navigator.accelerometer) {
+			Space.watchID = navigator.accelerometer.watchAcceleration(function(acceleration) {
+				if (acceleration.x > 0) {
+					Space.left = true;
+					Space.right = false;
+				}
+				else if (acceleration.x < 0) {
+					Space.left = false;
+					Space.right = true;
+				}
+				else {
+					Space.left = false;
+					Space.right = false;
+				}
+			}, function() {
+				alert('onError!');
+			}, options);
+		}
 	},
 	
 	setTitle: function() {
@@ -86,6 +134,7 @@ var Space = {
 				t = _("Space");
 			}
 			document.title = t;
+			$("#spaceTitle").text(t);
 		}
 	},
 	
@@ -111,7 +160,8 @@ var Space = {
 		else
 			c = 'H';
 		
-		var x = Math.floor(Math.random() * 700);
+		/* mobile */
+		var x = Math.floor(Math.random() * ($(window).outerWidth() - 30));
 		var a = $('<div>').addClass('asteroid').text(c).appendTo('#spacePanel').css('left', x + 'px');
 		a.data({
 			xMin: x,
@@ -119,7 +169,7 @@ var Space = {
 			height: a.height()
 		});
 		a.animate({
-			top: '740px'
+			top: $(window).outerHeight()-120
 		}, {
 			duration: Space.BASE_ASTEROID_SPEED - Math.floor(Math.random() * (Space.BASE_ASTEROID_SPEED * 0.65)),
 			easing: 'linear', 
@@ -136,7 +186,7 @@ var Space = {
 						t.remove();
 						Space.hull--;
 						Space.updateHull();
-						if(Space.hull === 0) {
+						if(Space.hull == 0) {
 							Space.crash();
 						}
 					}
@@ -165,8 +215,10 @@ var Space = {
 				Space.createAsteroid(true);
 			}
 			
+			var r = 700.0/$(window).outerWidth();
+			if (r < 1) r = 1;
 			if(!Space.done) {
-				Engine.setTimeout(Space.createAsteroid, 1000 - (Space.altitude * 10));
+				setTimeout(Space.createAsteroid, r * (1000 - (Space.altitude * 10)));
 			}
 		}
 	},
@@ -190,7 +242,7 @@ var Space = {
 			dx += Space.getSpeed();
 		}
 		
-		if(dx !== 0 && dy !== 0) {
+		if(dx != 0 && dy != 0) {
 			dx = dx / Math.sqrt(2);
 			dy = dy / Math.sqrt(2);
 		}
@@ -201,17 +253,20 @@ var Space = {
 			dy *= dt / 33;
 		}
 		
+		/* mobile */
+		mx = $(window).outerWidth() - 10;
+		
 		x = x + dx;
 		y = y + dy;
 		if(x < 10) {
 			x = 10;
-		} else if(x > 690) {
-			x = 690;
+		} else if(x > mx) {
+			x = mx;
 		}
 		if(y < 10) {
 			y = 10;
-		} else if(y > 690) {
-			y = 690;
+		} else if(y > mx) {
+			y = mx;
 		}
 		
 		Space.shipX = x;
@@ -223,18 +278,19 @@ var Space = {
 		});
 		
 		Space.lastMove = Date.now();
+
+		Space.left = false;
+		Space.right = false;
 	},
 	
 	startAscent: function() {
-		var body_color;
-		var to_color;
 		if (Engine.isLightsOff()) {
-			body_color = '#272823';
-			to_color = '#EEEEEE';
+			var body_color = '#272823';
+			var to_color = '#EEEEEE';
 		}
 		else {
-			body_color = '#FFFFFF';
-			to_color = '#000000';
+			var body_color = '#FFFFFF';
+			var to_color = '#000000';
 		}
 
 		$('body').addClass('noMask').css({backgroundColor: body_color}).animate({
@@ -246,14 +302,16 @@ var Space = {
 				var cur = $('body').css('background-color');
 				var s = 'linear-gradient(rgba' + cur.substring(3, cur.length - 1) + ', 0) 0%, rgba' + 
 					cur.substring(3, cur.length - 1) + ', 1) 100%)';
-				$('#notifyGradient').attr('style', 'background-color:'+cur+';background:-webkit-' + s + ';background:' + s);
+				if (!Engine.isAndroid) {
+				    $('#notifyGradient').attr('style', 'background-color:'+cur+';background:-webkit-' + s + ';background:' + s);
+				}
 			},
 			complete: Space.endGame
 		});
 		Space.drawStars();
 		Space._timer = setInterval(function() {
 			Space.altitude += 1;
-			if(Space.altitude % 10 === 0) {
+			if(Space.altitude % 10 == 0) {
 				Space.setTitle();
 			}
 			if(Space.altitude > 60) {
@@ -261,7 +319,7 @@ var Space = {
 			}
 		}, 1000);
 		
-		Space._panelTimeout = Engine.setTimeout(function() {
+		Space._panelTimeout = setTimeout(function() {
 			if (Engine.isLightsOff())
 				$('#spacePanel, .menu, select.menuBtn').animate({color: '#272823'}, 500, 'linear');
 			else
@@ -315,7 +373,7 @@ var Space = {
 			left: left
 		}).appendTo(el2);
 		if(num < Space.NUM_STARS) {
-			Engine.setTimeout(function() { Space.drawStarAsync(el, el2, num + 1); }, 100);
+			setTimeout(function() { Space.drawStarAsync(el, el2, num + 1); }, 100);
 		}
 	},
 	
@@ -326,11 +384,14 @@ var Space = {
 		clearInterval(Space._timer);
 		clearInterval(Space._shipTimer);
 		clearTimeout(Space._panelTimeout);
-		var body_color;
+		// mobile
+		if (navigator.accelerometer) {
+			navigator.accelerometer.clearWatch(Space.watchID);
+		}
 		if (Engine.isLightsOff())
-			body_color = '#272823';
+			var body_color = '#272823';
 		else
-			body_color = '#FFFFFF';
+			var body_color = '#FFFFFF';
 		// Craaaaash!
 		$('body').removeClass('noMask').stop().animate({
 			backgroundColor: body_color
@@ -340,20 +401,34 @@ var Space = {
 				var cur = $('body').css('background-color');
 				var s = 'linear-gradient(rgba' + cur.substring(3, cur.length - 1) + ', 0) 0%, rgba' + 
 					cur.substring(3, cur.length - 1) + ', 1) 100%)';
-				$('#notifyGradient').attr('style', 'background-color:'+cur+';background:-webkit-' + s + ';background:' + s);
+				if (!Engine.isAndroid) {
+					$('#notifyGradient').attr('style', 'background-color:'+cur+';background:-webkit-' + s + ';background:' + s);
+				}
 			},
 			complete: function() {
+			/* mobile
 				Space.stars.remove();
 				Space.starsBack.remove();
 				Space.stars = Space.starsBack = null;
-				$('#starsContainer').remove();
+				$('#starsContainer').remove(); */
 				$('body').attr('style', '');
-				$('#notifyGradient').attr('style', '');	
-				$('#spacePanel').attr('style', '');			
+				if (!Engine.isAndroid) {
+					$('#notifyGradient').attr('style', '');	
+				}
+				// $('#spacePanel').attr('style', '');
 			}
 		});
 		$('.menu, select.menuBtn').animate({color: '#666'}, 300, 'linear');
-		$('#outerSlider').animate({top: '0px'}, 300, 'linear');
+		/* mobile
+		$('#outerSlider').animate({top: '0px'}, 300, 'linear'); */
+		Space.stars.remove();
+		Space.starsBack.remove();
+		Space.stars = Space.starsBack = null;
+		$('#starsContainer').remove();
+		$('#spacePanel').attr('style', '');
+				
+		$("#main").show();
+		Space.panel.hide();
 		Engine.activeModule = Ship;
 		Ship.onArrival();
 		Button.cooldown($('#liftoffButton'));
@@ -372,6 +447,10 @@ var Space = {
 		clearTimeout(Events._eventTimeout);
 		clearTimeout(Room._fireTimer);
 		clearTimeout(Room._tempTimer);
+		// mobile
+		if (navigator.accelerometer) {
+			navigator.accelerometer.clearWatch(Space.watchID);
+		}
 		for(var k in Room.Craftables) {
 			Room.Craftables[k].button = null;
 		}
@@ -381,11 +460,14 @@ var Space = {
 		delete Outside._popTimeout;
 		
 		$('#hullRemaining', Space.panel).animate({opacity: 0}, 500, 'linear');
+		
+		/* mobile */
+		var left = $(window).outerWidth()/2 - 5;
+		var top = $(window).outerHeight() - 150;
 		Space.ship.animate({
-			top: '350px',
-			left: '240px'
+			left: left.toString()+'px'
 		}, 3000, 'linear', function() {
-			Engine.setTimeout(function() {
+			setTimeout(function() {
 				Space.ship.animate({
 					top: '-100px'
 				}, 200, 'linear', function() {
@@ -393,13 +475,12 @@ var Space = {
 					$('#outerSlider').css({'left': '0px', 'top': '0px'});
 					$('#locationSlider, #worldPanel, #spacePanel, #notifications').remove();
 					$('#header').empty();
-					Engine.setTimeout(function() {
+					setTimeout(function() {
 						$('body').stop();
-						var container_color;
 						if (Engine.isLightsOff())
-							container_color = '#EEE';
+							var container_color = '#EEE';
 						else
-							container_color = '#000';
+							var container_color = '#000';
 						$('#starsContainer').animate({
 							opacity: 0,
 							'background-color': container_color
@@ -409,7 +490,9 @@ var Space = {
 								var cur = $('body').css('background-color');
 								var s = 'linear-gradient(rgba' + cur.substring(3, cur.length - 1) + ', 0) 0%, rgba' + 
 									cur.substring(3, cur.length - 1) + ', 1) 100%)';
-								$('#notifyGradient').attr('style', 'background-color:'+cur+';background:-webkit-' + s + ';background:' + s);
+								if (!Engine.isAndroid) {
+									$('#notifyGradient').attr('style', 'background-color:'+cur+';background:-webkit-' + s + ';background:' + s);
+								}
 							},
 							complete: function() {
 								Engine.GAME_OVER = true;
@@ -440,7 +523,7 @@ var Space = {
 								$('<span>')
 									.addClass('endGame endGameRestart')
 									.text(_('restart.'))
-									.click(Engine.confirmDelete)
+									.click(function() {Engine.deleteSave(false);})
 									.appendTo('.centerCont')
 									.animate({opacity:1},1500);
 								Engine.options = {};

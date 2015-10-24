@@ -4,23 +4,21 @@
 var Outside = {
 	name: _("Outside"),
 	
-	_STORES_OFFSET: 0,
 	_GATHER_DELAY: 60,
 	_TRAPS_DELAY: 90,
 	_POP_DELAY: [0.5, 3],
-	_HUT_ROOM: 4,
 	
 	_INCOME: {
 		'gatherer': {
 			name: _('gatherer'),
-			delay: 10,
+			delay: 20,
 			stores: {
 				'wood': 1
 			}
 		},
 		'hunter': {
 			name: _('hunter'),
-			delay: 10,
+			delay: 30,
 			stores: {
 				'fur': 0.5,
 				'meat': 0.5
@@ -28,7 +26,7 @@ var Outside = {
 		},
 		'trapper': {
 			name: _('trapper'),
-			delay: 10,
+			delay: 50,
 			stores: {
 				'meat': -1,
 				'bait': 1
@@ -36,7 +34,7 @@ var Outside = {
 		},
 		'tanner': {
 			name: _('tanner'),
-			delay: 10,
+			delay: 80,
 			stores: {
 				'fur': -5,
 				'leather': 1
@@ -44,7 +42,7 @@ var Outside = {
 		},
 		'charcutier': {
 			name: _('charcutier'),
-			delay: 10,
+			delay: 130,
 			stores: {
 				'meat': -5,
 				'wood': -5,
@@ -53,7 +51,7 @@ var Outside = {
 		},
 		'iron miner': {
 			name: _('iron miner'),
-			delay: 10,
+			delay: 210,
 			stores: {
 				'cured meat': -1,
 				'iron': 1
@@ -61,7 +59,7 @@ var Outside = {
 		},
 		'coal miner': {
 			name: _('coal miner'),
-			delay: 10,
+			delay: 340,
 			stores: {
 				'cured meat': -1,
 				'coal': 1
@@ -69,7 +67,7 @@ var Outside = {
 		},
 		'sulphur miner': {
 			name: _('sulphur miner'),
-			delay: 10,
+			delay: 550,
 			stores: {
 				'cured meat': -1,
 				'sulphur': 1
@@ -77,7 +75,7 @@ var Outside = {
 		},
 		'steelworker': {
 			name: _('steelworker'),
-			delay: 10,
+			delay: 890,
 			stores: {
 				'iron': -1,
 				'coal': -1,
@@ -86,7 +84,7 @@ var Outside = {
 		},
 		'armourer': {
 			name: _('armourer'),
-			delay: 10,
+			delay: 1440,
 			stores: {
 				'steel': -1,
 				'sulphur': -1,
@@ -146,6 +144,9 @@ var Outside = {
 		this.panel = $('<div>').attr('id', "outsidePanel")
 			.addClass('location')
 			.appendTo('div#locationSlider');
+			
+		var rPanel = $('<div>').attr('id', "outsideRightPanel")
+			.appendTo('#outsidePanel');
 		
 		//subscribe to stateUpdates
 		$.Dispatch('stateUpdate').subscribe(Outside.handleStateUpdates);
@@ -159,7 +160,6 @@ var Outside = {
 		
 		this.updateVillage();
 		Outside.updateWorkersView();
-		Outside.updateVillageIncome();
 		
 		Engine.updateSlider();
 		
@@ -171,19 +171,17 @@ var Outside = {
 			cooldown: Outside._GATHER_DELAY,
 			width: '80px'
 		}).appendTo('div#outsidePanel');
-
-		Outside.updateTrapButton();
 	},
 	
 	getMaxPopulation: function() {
-		return $SM.get('game.buildings["hut"]', true) * Outside._HUT_ROOM;
+		return $SM.get('game.buildings["hut"]', true) * 4;
 	},
 	
 	increasePopulation: function() {
 		var space = Outside.getMaxPopulation() - $SM.get('game.population');
 		if(space > 0) {
 			var num = Math.floor(Math.random()*(space/2) + space/2);
-			if(num === 0) num = 1;
+			if(num == 0) num = 1;
 			if(num == 1) {
 				Notifications.notify(null, _('a stranger arrives in the night'));
 			} else if(num < 5) {
@@ -210,9 +208,9 @@ var Outside = {
 		if(remaining < 0) {
 			var gap = -remaining;
 			for(var k in $SM.get('game.workers')) {
-				var numWorkers = $SM.get('game.workers["'+k+'"]');
-				if(numWorkers < gap) {
-					gap -= numWorkers;
+				var num = $SM.get('game.workers["'+k+'"]');
+				if(num < gap) {
+					gap -= num;
 					$SM.set('game.workers["'+k+'"]', 0);
 				} else {
 					$SM.add('game.workers["'+k+'"]', gap * -1);
@@ -222,40 +220,10 @@ var Outside = {
 		}
 	},
 	
-	destroyHuts: function(num, allowEmpty) {
-		var dead = 0;
-		for(var i = 0; i < num; i++){
-			var population = $SM.get('game.population', true);
-			var rate = population / Outside._HUT_ROOM;
-			var full = Math.floor(rate);
-			// by default this is used to destroy full or half-full huts
-			// pass allowEmpty to include empty huts in the armageddon
-			var huts = (allowEmpty) ? $SM.get('game.buildings["hut"]', true) : Math.ceil(rate);
-			if(!huts) {
-				break;
-			}
-			// random can be 0 but not 1; however, 0 as a target is useless
-			var target = Math.floor(Math.random() * huts) + 1;
-			var inhabitants = 0;
-			if(target <= full){
-				inhabitants = Outside._HUT_ROOM;
-			} else if(target == full + 1){
-				inhabitants = population % Outside._HUT_ROOM;
-			}
-			$SM.set('game.buildings["hut"]', ($SM.get('game.buildings["hut"]') - 1));
-			if(inhabitants){
-				Outside.killVillagers(inhabitants);
-				dead += inhabitants;
-			}
-		}
-		// this method returns the total number of victims, for further actions
-		return dead;
-	},
-	
 	schedulePopIncrease: function() {
 		var nextIncrease = Math.floor(Math.random()*(Outside._POP_DELAY[1] - Outside._POP_DELAY[0])) + Outside._POP_DELAY[0];
 		Engine.log('next population increase scheduled in ' + nextIncrease + ' minutes');
-		Outside._popTimeout = Engine.setTimeout(Outside.increasePopulation, nextIncrease * 60 * 1000);
+		Outside._popTimeout = setTimeout(Outside.increasePopulation, nextIncrease * 60 * 1000);
 	},
 	
 	updateWorkersView: function() {
@@ -263,10 +231,10 @@ var Outside = {
 
 		// If our population is 0 and we don't already have a workers view,
 		// there's nothing to do here.
-		if(!workers.length && $SM.get('game.population') === 0) return;
+		if(!workers.length && $SM.get('game.population') == 0) return;
 
 		var needsAppend = false;
-		if(workers.length === 0) {
+		if(workers.length == 0) {
 			needsAppend = true;
 			workers = $('<div>').attr('id', 'workers').css('opacity', 0);
 		}
@@ -275,35 +243,38 @@ var Outside = {
 		var gatherer = $('div#workers_row_gatherer', workers);
 		
 		for(var k in $SM.get('game.workers')) {
-			var lk = _(k);
 			var workerCount = $SM.get('game.workers["'+k+'"]');
 			var row = $('div#workers_row_' + k.replace(' ', '-'), workers);
-			if(row.length === 0) {
+			if(row.length == 0) {
 				row = Outside.makeWorkerRow(k, workerCount);
 				
 				var curPrev = null;
 				workers.children().each(function(i) {
 					var child = $(this);
-					var cName = child.children('.row_key').text();
+					var cName = child.attr('id').substring(12).replace('-', ' ');
 					if(cName != 'gatherer') {
-						if(cName < lk) {
-							curPrev = child.attr('id');
+						if(cName < k && (curPrev == null || cName > curPrev)) {
+							curPrev = cName;
 						}
 					}
 				});
-				if(curPrev == null && gatherer.length === 0) {
+				if(curPrev == null && gatherer.length == 0) {
 					row.prependTo(workers);
-				} else if(curPrev == null) {
+				} 
+				else if(curPrev == null)
+				{
 					row.insertAfter(gatherer);
-				} else {
-					row.insertAfter(workers.find('#'+ curPrev));
+				} 
+				else 
+				{
+					row.insertAfter(workers.find('#workers_row_' + curPrev.replace(' ', '-')));
 				}
 				
 			} else {
 				$('div#' + row.attr('id') + ' > div.row_val > span', workers).text(workerCount);
 			}
 			numGatherers -= workerCount;
-			if(workerCount === 0) {
+			if(workerCount == 0) {
 				$('.dnBtn', row).addClass('disabled');
 				$('.dnManyBtn', row).addClass('disabled');
 			} else {
@@ -312,14 +283,14 @@ var Outside = {
 			}
 		}
 		
-		if(gatherer.length === 0) {
+		if(gatherer.length == 0) {
 			gatherer = Outside.makeWorkerRow('gatherer', numGatherers);
 			gatherer.prependTo(workers);
 		} else {
 			$('div#workers_row_gatherer > div.row_val > span', workers).text(numGatherers);
 		}
 		
-		if(numGatherers === 0) {
+		if(numGatherers == 0) {
 			$('.upBtn', '#workers').addClass('disabled');
 			$('.upManyBtn', '#workers').addClass('disabled');
 		} else {
@@ -329,7 +300,7 @@ var Outside = {
 		
 		
 		if(needsAppend && workers.children().length > 0) {
-			workers.appendTo('#outsidePanel').animate({opacity:1}, 300, 'linear');
+			workers.appendTo('#outsideRightPanel').animate({opacity:1}, 300, 'linear');
 		}
 	},
 	
@@ -354,14 +325,18 @@ var Outside = {
 		$('<span>').text(num).appendTo(val);
 		
 		if(key != 'gatherer') {
+		    /* mobile
+			$('<div>').addClass('upManyBtn').appendTo(val).click([10], Outside.increaseWorker);
 			$('<div>').addClass('upBtn').appendTo(val).click([1], Outside.increaseWorker);
 			$('<div>').addClass('dnBtn').appendTo(val).click([1], Outside.decreaseWorker);
-			$('<div>').addClass('upManyBtn').appendTo(val).click([10], Outside.increaseWorker);
-			$('<div>').addClass('dnManyBtn').appendTo(val).click([10], Outside.decreaseWorker);
+			$('<div>').addClass('dnManyBtn').appendTo(val).click([10], Outside.decreaseWorker); */
+			$('<div>').html("<div class='triangle-up'></div>").addClass('mBtn').appendTo(val).click([1], Outside.increaseWorker);
+			$('<div>').html("<div class='triangle-down'></div>").addClass('mBtn').appendTo(val).click([1], Outside.decreaseWorker);
 		}
 		
 		$('<div>').addClass('clear').appendTo(row);
 		
+		/* mobile
 		var tooltip = $('<div>').addClass('tooltip bottom right').appendTo(row);
 		var income = Outside._INCOME[key];
 		for(var s in income.stores) {
@@ -369,7 +344,15 @@ var Outside = {
 			$('<div>').addClass('row_key').text(_(s)).appendTo(r);
 			$('<div>').addClass('row_val').text(Engine.getIncomeMsg(income.stores[s], income.delay)).appendTo(r);
 			r.appendTo(tooltip);
+		} */
+		
+		var tooltip = $('<div>').addClass('info').appendTo(row);
+		var income = Outside._INCOME[key];
+		var r = "";
+		for(var s in income.stores) {
+			r += _(s) + ":" + Engine.getIncomeMsg(income.stores[s], income.delay) + " ";
 		}
+		tooltip.text(r);
 		
 		return row;
 	},
@@ -394,31 +377,30 @@ var Outside = {
 	
 	updateVillageRow: function(name, num, village) {
 		var id = 'building_row_' + name.replace(' ', '-');
-		var lname = _(name);
 		var row = $('div#' + id, village);
-		if(row.length === 0 && num > 0) {
+		if(row.length == 0 && num > 0) {
 			row = $('<div>').attr('id', id).addClass('storeRow');
-			$('<div>').addClass('row_key').text(lname).appendTo(row);
+			$('<div>').addClass('row_key').text(_(name)).appendTo(row);
 			$('<div>').addClass('row_val').text(num).appendTo(row);
 			$('<div>').addClass('clear').appendTo(row);
 			var curPrev = null;
 			village.children().each(function(i) {
 				var child = $(this);
 				if(child.attr('id') != 'population') {
-					var cName = child.children('.row_key').text();
-					if(cName < lname) {
-						curPrev = child.attr('id');
+					var cName = child.attr('id').substring(13).replace('-', ' ');
+					if(cName < name && (curPrev == null || cName > curPrev)) {
+						curPrev = cName;
 					}
 				}
 			});
 			if(curPrev == null) {
 				row.prependTo(village);
 			} else {
-				row.insertAfter('#' + curPrev);
+				row.insertAfter('#building_row_' + curPrev.replace(' ', '-'));
 			}
 		} else if(num > 0) {
 			$('div#' + row.attr('id') + ' > div.row_val', village).text(num);
-		} else if(num === 0) {
+		} else if(num == 0) {
 			row.remove();
 		}
 	},
@@ -427,7 +409,7 @@ var Outside = {
 		var village = $('div#village');
 		var population = $('div#population');
 		var needsAppend = false;
-		if(village.length === 0) {
+		if(village.length == 0) {
 			needsAppend = true;
 			village = $('<div>').attr('id', 'village').css('opacity', 0);
 			population = $('<div>').attr('id', 'population').appendTo(village);
@@ -452,16 +434,16 @@ var Outside = {
 		population.text(_('pop ') + $SM.get('game.population') + '/' + this.getMaxPopulation());
 		
 		var hasPeeps;
-		if($SM.get('game.buildings["hut"]', true) === 0) {
+		if($SM.get('game.buildings["hut"]', true) == 0) {
 			hasPeeps = false;
-			village.attr('data-legend', _('forest'));
+			village.addClass('noHuts');
 		} else {
 			hasPeeps = true;
-			village.attr('data-legend', _('village'));
+			village.removeClass('noHuts');
 		}
 		
 		if(needsAppend && village.children().length > 1) {
-			village.prependTo('#outsidePanel');
+			village.appendTo('#outsideRightPanel');
 			village.animate({opacity:1}, 300, 'linear');
 		}
 		
@@ -472,7 +454,7 @@ var Outside = {
 		this.setTitle();
 
 		if(!ignoreStores && Engine.activeModule === Outside && village.children().length > 1) {
-			$('#storesContainer').css({top: village.height() + 26 + Outside._STORES_OFFSET + 'px'});
+			$('#storesContainer').css({top: village.height() + 26 + 'px'});
 		}
 	},
 	
@@ -511,10 +493,13 @@ var Outside = {
 			if(typeof num == 'number') {
 				var stores = {};
 				if(num < 0) num = 0;
-				var tooltip = $('.tooltip', 'div#workers_row_' + worker.replace(' ', '-'));
+				/* mobile */
+				var tooltip = $('.info', 'div#workers_row_' + worker.replace(' ', '-'));
 				tooltip.empty();
 				var needsUpdate = false;
 				var curIncome = $SM.getIncome(worker);
+				
+				/* mobile
 				for(var store in income.stores) {
 					stores[store] = income.stores[store] * num;
 					if(curIncome[store] != stores[store]) needsUpdate = true;
@@ -522,7 +507,22 @@ var Outside = {
 					$('<div>').addClass('row_key').text(_(store)).appendTo(row);
 					$('<div>').addClass('row_val').text(Engine.getIncomeMsg(stores[store], income.delay)).appendTo(row);
 					row.appendTo(tooltip);
+				} */
+				
+				var r = "";
+				for(var store in income.stores) {
+					stores[store] = income.stores[store] * num;
+					if(curIncome[store] != stores[store]) needsUpdate = true;
+					/* mobile
+					var row = $('<div>').addClass('storeRow');
+					$('<div>').addClass('row_key').text(_(store)).appendTo(row);
+					$('<div>').addClass('row_val').text(Engine.getIncomeMsg(stores[store], income.delay)).appendTo(row);
+					row.appendTo(tooltip);
+					*/
+					r += _(store) + ": " + Engine.getIncomeMsg(stores[store], income.delay) + " ";
 				}
+				tooltip.text(r);
+				
 				if(needsUpdate) {
 					$SM.setIncome(worker, {
 						delay: income.delay,
@@ -537,7 +537,7 @@ var Outside = {
 	updateTrapButton: function() {
 		var btn = $('div#trapsButton');
 		if($SM.get('game.buildings["trap"]', true) > 0) {
-			if(btn.length === 0) {
+			if(btn.length == 0) {
 				new Button.Button({
 					id: 'trapsButton',
 					text: _("check traps"),
@@ -558,7 +558,7 @@ var Outside = {
 	setTitle: function() {
 		var numHuts = $SM.get('game.buildings["hut"]', true);
 		var title;
-		if(numHuts === 0) {
+		if(numHuts == 0) {
 			title = _("A Silent Forest");
 		} else if(numHuts == 1) {
 			title = _("A Lonely Hut");
@@ -617,13 +617,13 @@ var Outside = {
 				}
 			}
 		}
-		/// TRANSLATORS : Mind the whitespace at the end.
+        /// TRANSLATORS : Mind the whitespace at the end.
 		var s = _('the traps contain ');
 		for(var i = 0, len = msg.length; i < len; i++) {
 			if(len > 1 && i > 0 && i < len - 1) {
 				s += ", ";
 			} else if(len > 1 && i == len - 1) {
-				/// TRANSLATORS : Mind the whitespaces at the beginning and end.
+                /// TRANSLATORS : Mind the whitespaces at the beginning and end.
 				s += _(" and ");
 			}
 			s += msg[i];
@@ -639,42 +639,10 @@ var Outside = {
 	handleStateUpdates: function(e){
 		if(e.category == 'stores'){
 			Outside.updateVillage();
-		} else if(e.stateName.indexOf('game.workers') === 0 || e.stateName.indexOf('game.population') === 0){
+		} else if(e.stateName.indexOf('game.workers') == 0 || e.stateName.indexOf('game.population') == 0){
 			Outside.updateVillage();
 			Outside.updateWorkersView();
 			Outside.updateVillageIncome();
 		};
-	},
-
-	scrollSidebar: function(direction, reset) {
-
-		if( typeof reset != "undefined" ){
-			$('#village').css('top', '0px');
-			$('#storesContainer').css('top', '224px');
-			Outside._STORES_OFFSET = 0;
-			return false;
-		}
-
-		var momentum = 10;
-		
-		// If they hit up, we scroll everything down
-		if( direction == 'up' )
-			momentum = momentum * -1;
-
-		/* Let's stop scrolling if the top or bottom bound is in the viewport, based on direction */
-		if( direction == 'down' && inView( direction, $('#village') ) ){
-
-			return false;
-
-		}else if( direction == 'up' && inView( direction, $('#storesContainer') ) ){
-
-			return false;
-
-		}
-		
-		scrollByX( $('#village'), momentum );
-		scrollByX( $('#storesContainer'), momentum );
-		Outside._STORES_OFFSET += momentum;
-
 	}
 };

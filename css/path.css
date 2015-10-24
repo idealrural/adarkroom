@@ -1,14 +1,15 @@
 #outfitting {
 	position: relative;
 	border: 1px solid black;
-	width: 200px;
+	/* mobile */
+	width: 50%;
 	margin-bottom: 20px;
 	padding: 5px 10px;
 }
 
-div#outfitting:before ,div#perks:before {
-	content: attr(data-legend);
+div#outfitting:before {
 	position: absolute;
+	content: "supplies";
 	top: -13px;
 	background-color: white;
 }
@@ -16,7 +17,7 @@ div#outfitting:before ,div#perks:before {
 div.outfitRow {
 	position: relative;
 	cursor: default;
-	margin: 10px -30px 10px 0px;
+	margin: 15px -30px 15px 0px;
 }
 
 div.outfitRow > .row_val {
@@ -47,13 +48,28 @@ div#perks {
 	border: 1px solid black;
 	cursor: default;
 	padding: 5px 10px;
-	width: 200px;
+	/* mobile */
+	width: 25%;
+}
+
+div#perks:before {
+	position: absolute;
+	content: "perks";
+	top: -13px;
+	background-color: white;
 }
 
 div.perkRow {
 	position: relative;
+	/* mobile */
+	margin-bottom: 10px;
 }
 
 div.perkRow .row_key {
 	float: none;
+}
+
+/* mobile */
+#embarkButton {
+    margin-bottom: 110px;
 }

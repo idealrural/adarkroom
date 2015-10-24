@@ -1,54 +1,103 @@
+/* mobile
 div#buildBtns {
 	position: absolute;
 	top: 50px;
 	left: 0px;
+} */
+
+div#buildBtns {
+	margin-bottom: 20px;
 }
 
-div#buildBtns:before, div#craftBtns:before, div#buyBtns:before {
-	content: attr(data-legend);
+div#roomLeftPanel {
+	position: absolute;
+	top: 80px;
+	left: 0px;
+	padding-bottom: 110px;
+}
+
+div#buildBtns:before {
+	content: "build:";
 	position: relative;
 	top: -5px;
 }
 
+/* mobile
 div#craftBtns {
 	position: absolute;
 	top: 50px;
 	left: 150px;
+} */
+
+div#craftBtns:before {
+	content: "craft:";
+	position: relative;
+	top: -5px;
 }
 
+/* mobile
 div#buyBtns {
 	position: absolute;
 	top: 50px;
 	left: 300px;
+} */
+
+div#buyBtns {
+   margin-top: 20px;
+   width: 100%;
+}
+
+div#buyBtns:before {
+	content: "buy:";
+	position: relative;
+	top: -5px;
+}
+
+/* mobile
+div#storesContainer {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	width: 50%;
+} */
+
+#roomRightPanel {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	width: 50%;
 }
 
 div#storesContainer {
 	position: absolute;
 	top: 0px;
 	right: 0px;
-}
-
-div#stores:before, div#weapons:before {
-	position: absolute;
-	background: white;
-	content: attr(data-legend);
-	left: 8px;
-	top: -13px;
+	width: 50%;
 }
 
 div#stores {
 	position: relative;
-	z-index:10;
 	border: 1px solid black;
 	cursor: default;
 	padding: 5px 10px;
-	width: 200px;
+	/* mobile */
+	width: 80%;
 }
 
 div.storeRow {
 	position: relative;
+	margin-bottom: 20px;
 }
 
+div#stores:before {
+	position: absolute;
+	background: white;
+	content: "stores";
+	left: 8px;
+	top: -13px;	
+}
+
+/* mobile
 div#weapons {
 	margin-top: 15px;
 	position: relative;
@@ -56,5 +105,32 @@ div#weapons {
 	border: 1px solid black;
 	cursor: default;
 	padding: 5px 10px;
-	width: 200px;
+	width: 100%;
+} */
+
+div#weapons {
+	position: relative;
+	border: 1px solid black;
+	cursor: default;
+	margin-top: 20px;
+	padding: 5px 10px;
+	width: 80%;
+}
+
+div#weapons:before {
+	position: absolute;
+	background: white;
+	content: "weapons";
+	left: 8px;
+	top: -13px;	
+}
+
+/* mobile */
+.info {
+    font-size: 0.75em;
+	color: gray;
+}
+
+.eventPanel .info {
+    color: #aaaaaa;
 }

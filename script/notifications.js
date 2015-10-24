@@ -3,6 +3,9 @@
  */
 var Notifications = {
 	
+	more: false,
+	font_size: 100,
+	
 	init: function(options) {
 		this.options = $.extend(
 			this.options,
@@ -10,10 +13,12 @@ var Notifications = {
 		);
 		
 		// Create the notifications box
+		// mobile
 		elem = $('<div>').attr({
 			id: 'notifications',
 			className: 'notifications'
 		});
+			
 		// Create the transparency gradient
 		$('<div>').attr('id', 'notifyGradient').appendTo(elem);
 		
@@ -33,7 +38,7 @@ var Notifications = {
 		if(module != null && Engine.activeModule != module) {
 			if(!noQueue) {
 				if(typeof this.notifyQueue[module] == 'undefined') {
-					this.notifyQueue[module] = [];
+					this.notifyQueue[module] = new Array();
 				}
 				this.notifyQueue[module].push(text);
 			}
